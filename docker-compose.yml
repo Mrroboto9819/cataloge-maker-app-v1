@@ -1,0 +1,26 @@
+services:
+  cataloge-maker:
+    build: .
+    container_name: cataloge-maker-dev
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    networks:
+      - proxy-dev
+    labels:
+      - "traefik.enable=true"
+      # HTTP router (will redirect to HTTPS via global redirect)
+      - "traefik.http.routers.cataloge-maker-dev-http.rule=Host(`monitor.pablocabrera.dev`)"
+      - "traefik.http.routers.cataloge-maker-dev-http.entrypoints=http"
+      # HTTPS router
+      - "traefik.http.routers.cataloge-maker-dev-https.rule=Host(`monitor.pablocabrera.dev`)"
+      - "traefik.http.routers.cataloge-maker-dev-https.entrypoints=https"
+      - "traefik.http.routers.cataloge-maker-dev-https.tls=true"
+      - "traefik.http.routers.cataloge-maker-dev-https.tls.certresolver=letsencrypt"
+      # Service configuration
+      - "traefik.http.services.cataloge-maker-dev.loadbalancer.server.port=3000"
+
+networks:
+  proxy-dev:
+    external: true
