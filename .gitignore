@@ -1,0 +1,32 @@
+# Nuxt dev/build outputs
+.output/
+.data/
+.nuxt/
+.nitro/
+.cache/
+dist/
+
+# Node / package managers
+node_modules/
+
+# pnpm
+pnpm-debug.log*
+
+# bun
+bun.lockb
+.bun/
+
+# Logs
+logs/
+*.log
+
+# OS / Editor
+.DS_Store
+.fleet/
+.idea/
+.vscode/
+
+# Local environment files
+.env
+.env.*
+!.env.example
