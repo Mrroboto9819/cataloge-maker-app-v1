@@ -18,9 +18,8 @@
   >
     <!-- Dark Overlay (between background and content) -->
     <div
-      class="absolute inset-0 pointer-events-auto"
+      class="absolute inset-0 pointer-events-none"
       style="background-color: rgba(0, 0, 0, 0.3);"
-      @click="$emit('select', { type: 'background' })"
     ></div>
 
     <!-- Content Container -->

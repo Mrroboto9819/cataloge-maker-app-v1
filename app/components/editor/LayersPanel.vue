@@ -6,10 +6,10 @@
       <div
         @click="$emit('select', { type: 'background' })"
         :class="[
-          'px-4 py-2.5 flex items-center gap-2 cursor-pointer transition-colors border-l-2',
+          'px-4 py-2.5 flex items-center gap-2 cursor-pointer transition-all',
           selected?.type === 'background'
-            ? 'bg-blue-600 bg-opacity-20 border-blue-500 text-blue-300'
-            : 'border-transparent hover:bg-gray-700'
+            ? 'bg-blue-600 bg-opacity-20 text-blue-300 shadow-[inset_2px_0_0_rgb(59,130,246)]'
+            : 'hover:bg-gray-700 shadow-[inset_2px_0_0_transparent]'
         ]"
       >
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -22,10 +22,10 @@
       <div
         @click="$emit('select', { type: 'logo' })"
         :class="[
-          'px-4 py-2.5 flex items-center gap-2 cursor-pointer transition-colors border-l-2',
+          'px-4 py-2.5 flex items-center gap-2 cursor-pointer transition-all',
           selected?.type === 'logo'
-            ? 'bg-blue-600 bg-opacity-20 border-blue-500 text-blue-300'
-            : 'border-transparent hover:bg-gray-700'
+            ? 'bg-blue-600 bg-opacity-20 text-blue-300 shadow-[inset_2px_0_0_rgb(59,130,246)]'
+            : 'hover:bg-gray-700 shadow-[inset_2px_0_0_transparent]'
         ]"
       >
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -38,10 +38,10 @@
       <div
         @click="$emit('select', { type: 'title' })"
         :class="[
-          'px-4 py-2.5 flex items-center gap-2 cursor-pointer transition-colors border-l-2',
+          'px-4 py-2.5 flex items-center gap-2 cursor-pointer transition-all',
           selected?.type === 'title'
-            ? 'bg-blue-600 bg-opacity-20 border-blue-500 text-blue-300'
-            : 'border-transparent hover:bg-gray-700'
+            ? 'bg-blue-600 bg-opacity-20 text-blue-300 shadow-[inset_2px_0_0_rgb(59,130,246)]'
+            : 'hover:bg-gray-700 shadow-[inset_2px_0_0_transparent]'
         ]"
       >
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -54,10 +54,10 @@
       <div
         @click="$emit('select', { type: 'subtitle' })"
         :class="[
-          'px-4 py-2.5 flex items-center gap-2 cursor-pointer transition-colors border-l-2',
+          'px-4 py-2.5 flex items-center gap-2 cursor-pointer transition-all',
           selected?.type === 'subtitle'
-            ? 'bg-blue-600 bg-opacity-20 border-blue-500 text-blue-300'
-            : 'border-transparent hover:bg-gray-700'
+            ? 'bg-blue-600 bg-opacity-20 text-blue-300 shadow-[inset_2px_0_0_rgb(59,130,246)]'
+            : 'hover:bg-gray-700 shadow-[inset_2px_0_0_transparent]'
         ]"
       >
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -95,10 +95,10 @@
             :key="product.id"
             @click="$emit('select', { type: 'product', id: product.id })"
             :class="[
-              'px-4 py-2 pl-10 flex items-center gap-2 cursor-pointer transition-colors border-l-2 group',
+              'px-4 py-2 pl-10 flex items-center gap-2 cursor-pointer transition-all group',
               selected?.type === 'product' && selected?.id === product.id
-                ? 'bg-blue-600 bg-opacity-20 border-blue-500 text-blue-300'
-                : 'border-transparent hover:bg-gray-700'
+                ? 'bg-blue-600 bg-opacity-20 text-blue-300 shadow-[inset_2px_0_0_rgb(59,130,246)]'
+                : 'hover:bg-gray-700 shadow-[inset_2px_0_0_transparent]'
             ]"
           >
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

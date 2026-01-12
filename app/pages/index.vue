@@ -33,7 +33,7 @@
       <!-- Canvas Area -->
       <div class="flex-1 overflow-auto p-8 flex items-start justify-center">
         <CatalogCanvas
-          ref="catalogCanvasRef"
+          ref="desktopCanvasRef"
           :catalog="catalog"
           :selected="selectedElement"
           @select="handleSelect"
@@ -89,7 +89,7 @@
       <div class="min-w-max min-h-full flex items-center justify-center p-4">
         <div :style="{ transform: `scale(${mobileZoom})`, transformOrigin: 'center center', transition: 'transform 0.2s ease' }">
           <CatalogCanvas
-            ref="catalogCanvasRef"
+            ref="mobileCanvasRef"
             :catalog="catalog"
             :selected="selectedElement"
             @select="handleSelect"
@@ -291,18 +291,19 @@ const handleSelectMobile = (selection) => {
   mobileLayersOpen.value = false
 
   // Scroll to and center the selected product
-  if (selection?.type === 'product' && selection?.id) {
-    setTimeout(() => {
-      const productElement = document.querySelector(`[data-product-id="${selection.id}"]`)
-      if (productElement) {
-        productElement.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center',
-          inline: 'center'
-        })
-      }
-    }, 100)
-  }
+  // COMMENTED OUT: Causing unwanted scroll behavior
+  // if (selection?.type === 'product' && selection?.id) {
+  //   setTimeout(() => {
+  //     const productElement = document.querySelector(`[data-product-id="${selection.id}"]`)
+  //     if (productElement) {
+  //       productElement.scrollIntoView({
+  //         behavior: 'smooth',
+  //         block: 'center',
+  //         inline: 'center'
+  //       })
+  //     }
+  //   }, 100)
+  // }
 
   if (selection) {
     mobilePropertiesOpen.value = true
@@ -331,26 +332,28 @@ const resetZoom = () => {
   mobileZoom.value = 1
 }
 
-// Ref to catalog canvas
-const catalogCanvasRef = ref(null)
+// Refs to catalog canvases (desktop and mobile)
+const desktopCanvasRef = ref(null)
+const mobileCanvasRef = ref(null)
 
 // Handle selection
 const handleSelect = (selection) => {
   selectedElement.value = selection
 
   // Scroll to and center the selected product
-  if (selection?.type === 'product' && selection?.id) {
-    setTimeout(() => {
-      const productElement = document.querySelector(`[data-product-id="${selection.id}"]`)
-      if (productElement) {
-        productElement.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center',
-          inline: 'center'
-        })
-      }
-    }, 100)
-  }
+  // COMMENTED OUT: Causing unwanted scroll behavior
+  // if (selection?.type === 'product' && selection?.id) {
+  //   setTimeout(() => {
+  //     const productElement = document.querySelector(`[data-product-id="${selection.id}"]`)
+  //     if (productElement) {
+  //       productElement.scrollIntoView({
+  //         behavior: 'smooth',
+  //         block: 'center',
+  //         inline: 'center'
+  //       })
+  //     }
+  //   }, 100)
+  // }
 }
 
 // Handle property updates
@@ -439,13 +442,20 @@ const deleteProduct = (productId) => {
 
 // Download catalog
 const downloadCatalog = async () => {
-  if (!catalogCanvasRef.value?.catalogContainer) {
+  // Determine which canvas ref to use (desktop or mobile)
+  const canvasRef = desktopCanvasRef.value?.catalogContainer
+    ? desktopCanvasRef
+    : mobileCanvasRef.value?.catalogContainer
+    ? mobileCanvasRef
+    : null
+
+  if (!canvasRef?.value?.catalogContainer) {
     alert('Catalog not ready. Please try again.')
     return
   }
 
   try {
-    const element = catalogCanvasRef.value.catalogContainer
+    const element = canvasRef.value.catalogContainer
 
     // Temporarily hide selection rings for export
     const oldSelection = selectedElement.value
