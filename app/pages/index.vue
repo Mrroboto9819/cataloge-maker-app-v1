@@ -17,7 +17,7 @@
       <!-- Toolbar -->
       <div class="bg-gray-800 border-b border-gray-700 px-4 py-2.5 flex items-center justify-between">
         <h1 class="text-sm font-semibold text-gray-100">
-          Product Catalog Maker
+          Product Catalog Maker V1.0.0
         </h1>
         <button
           @click="downloadCatalog"
