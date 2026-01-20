@@ -33,6 +33,7 @@ logs/
 
 # agents
 .claude/
-
+.claude
 # docker
 docker-compose.yml
+docker-compose.prod.yml
