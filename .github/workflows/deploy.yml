@@ -1,15 +1,33 @@
-name: Front - Build & Deploy (Local Docker)
+name: Build & Deploy to K8s
 
 on:
   push:
-    branches: ["main"]
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: catalog-maker
+  NAMESPACE: catalog-maker
+  DEPLOYMENT: catalog-maker
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy via SSH (local Docker build)
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get version info
+        id: version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          echo "tag=v${VERSION}-${SHA}" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -18,21 +36,73 @@ jobs:
           port: ${{ secrets.VPS_PORT }}
           script: |
             set -e
+            APP_DIR="/opt/k3s/apps/cataloge-maker-app-v1"
+            IMAGE="${{ env.IMAGE_NAME }}:${{ steps.version.outputs.tag }}"
+            SHA="${{ steps.version.outputs.sha }}"
 
-            cd /opt/webapps/apps/cataloge-maker-app-v1
-
-            echo "Pulling latest code..."
+            echo "=== Pulling latest code ==="
+            cd "$APP_DIR"
             git fetch origin main
             git reset --hard origin/main
-            git clean -fd
 
-            git pull origin main
+            echo "=== Building Docker image: $IMAGE ==="
+            docker build \
+              --build-arg BUILD_ID="$SHA" \
+              -t "$IMAGE" \
+              -t "${{ env.IMAGE_NAME }}:latest" .
 
-            echo "Building containers..."
-            docker compose -f docker-compose.prod.yml build
+            echo "=== Importing image to K3s (stage-worker) ==="
+            # Import to local k3s
+            docker save "$IMAGE" | ctr -n k8s.io images import -
 
-            echo "Restarting containers..."
-            docker compose -f docker-compose.prod.yml up -d
+            # Import to stage-worker via privileged pod
+            docker save "$IMAGE" -o /tmp/catalog-deploy.tar
 
-            echo "Cleaning unused images..."
-            docker image prune -f
+            kubectl run img-deploy --image=alpine:latest --restart=Never \
+              --overrides='{
+                "spec": {
+                  "nodeSelector": {"nodepool": "stage"},
+                  "containers": [{
+                    "name": "deploy",
+                    "image": "alpine:latest",
+                    "command": ["sleep", "120"],
+                    "volumeMounts": [{
+                      "name": "ctr-sock",
+                      "mountPath": "/run/containerd/containerd.sock"
+                    }, {
+                      "name": "tmp",
+                      "mountPath": "/images"
+                    }],
+                    "securityContext": {"privileged": true}
+                  }],
+                  "volumes": [{
+                    "name": "ctr-sock",
+                    "hostPath": {"path": "/run/k3s/containerd/containerd.sock"}
+                  }, {
+                    "name": "tmp",
+                    "hostPath": {"path": "/tmp"}
+                  }]
+                }
+              }' 2>/dev/null
+
+            kubectl wait --for=condition=Ready pod/img-deploy --timeout=30s 2>/dev/null
+            kubectl cp /tmp/catalog-deploy.tar img-deploy:/images/catalog-deploy.tar
+            kubectl exec img-deploy -- sh -c 'apk add --no-cache containerd-ctr >/dev/null 2>&1 && ctr -n k8s.io images import /images/catalog-deploy.tar'
+            kubectl delete pod img-deploy --force --grace-period=0 2>/dev/null
+            rm -f /tmp/catalog-deploy.tar
+
+            echo "=== Updating deployment ==="
+            kubectl set image deployment/${{ env.DEPLOYMENT }} \
+              web="$IMAGE" \
+              -n ${{ env.NAMESPACE }}
+
+            kubectl set env deployment/${{ env.DEPLOYMENT }} \
+              BUILD_ID="$SHA" \
+              -n ${{ env.NAMESPACE }}
+
+            echo "=== Waiting for rollout ==="
+            kubectl rollout status deployment/${{ env.DEPLOYMENT }} \
+              -n ${{ env.NAMESPACE }} --timeout=120s
+
+            echo "=== Deploy complete ==="
+            kubectl get pods -n ${{ env.NAMESPACE }} -o wide

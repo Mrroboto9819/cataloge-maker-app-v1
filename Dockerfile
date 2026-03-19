@@ -16,6 +16,8 @@ RUN pnpm install --no-frozen-lockfile
 
 # Build stage
 FROM base AS build
+ARG BUILD_ID=dev
+ENV BUILD_ID=$BUILD_ID
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY . .
 
