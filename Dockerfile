@@ -27,6 +27,7 @@ FROM node:20-alpine AS production
 
 # Install pnpm
 RUN corepack enable && corepack prepare pnpm@10.26.1 --activate
+RUN apk add --no-cache curl
 
 WORKDIR /app
 
@@ -41,6 +42,5 @@ EXPOSE 3000
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=3000
-
 # Start the application
 CMD ["node", ".output/server/index.mjs"]
