@@ -40,9 +40,10 @@ jobs:
         run: |
           docker save "$IMAGE" -o /tmp/catalog-deploy.tar
 
-          kubectl delete pod img-deploy --force --grace-period=0 2>/dev/null || true
+          NS=violet-vault
+          kubectl delete pod img-deploy -n $NS --force --grace-period=0 2>/dev/null || true
 
-          kubectl run img-deploy --image=alpine:latest --restart=Never \
+          kubectl run img-deploy -n $NS --image=alpine:latest --restart=Never \
             --overrides='{
               "spec": {
                 "nodeSelector": {"nodepool": "stage"},
@@ -70,13 +71,13 @@ jobs:
             }'
 
           echo "Waiting for importer pod..."
-          kubectl wait --for=condition=Ready pod/img-deploy --timeout=60s
+          kubectl wait --for=condition=Ready pod/img-deploy -n $NS --timeout=60s
 
           echo "Copying image..."
-          kubectl cp /tmp/catalog-deploy.tar img-deploy:/images/catalog-deploy.tar
-          kubectl exec img-deploy -- sh -c 'apk add --no-cache containerd-ctr >/dev/null 2>&1 && ctr -n k8s.io images import /images/catalog-deploy.tar'
+          kubectl cp /tmp/catalog-deploy.tar $NS/img-deploy:/images/catalog-deploy.tar
+          kubectl exec img-deploy -n $NS -- sh -c 'apk add --no-cache containerd-ctr >/dev/null 2>&1 && ctr -n k8s.io images import /images/catalog-deploy.tar'
 
-          kubectl delete pod img-deploy --force --grace-period=0 2>/dev/null || true
+          kubectl delete pod img-deploy -n $NS --force --grace-period=0 2>/dev/null || true
           rm -f /tmp/catalog-deploy.tar
 
       - name: Deploy to K8s
